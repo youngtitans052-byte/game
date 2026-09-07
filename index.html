@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Street Velocity</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #050505;
+    color: white;
+}
+
+button {
+    font: inherit;
+    border: none;
+    cursor: pointer;
+}
+
+.screen {
+    position: fixed;
+    inset: 0;
+    display: none;
+}
+
+.screen.active {
+    display: flex;
+}
+
+/* ================= MENU ================= */
+
+#menu {
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background:
+        radial-gradient(circle at 50% 30%, #202020, #050505 65%);
+}
+
+.logo {
+    font-size: clamp(42px, 9vw, 90px);
+    font-weight: 1000;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    transform: skew(-8deg);
+    text-shadow: 0 0 25px rgba(255,255,255,.25);
+}
+
+.logo span {
+    color: #ff3030;
+}
+
+.subtitle {
+    margin-top: 8px;
+    color: #aaa;
+    letter-spacing: 5px;
+    font-size: 13px;
+}
+
+.menu-buttons {
+    width: min(420px, 88vw);
+    display: grid;
+    gap: 12px;
+    margin-top: 40px;
+}
+
+.menu-btn {
+    padding: 17px;
+    border-radius: 12px;
+    background: #151515;
+    border: 1px solid #333;
+    color: white;
+    font-weight: 800;
+    letter-spacing: 1px;
+    transition: .15s;
+}
+
+.menu-btn:hover {
+    background: #ff3030;
+    border-color: #ff3030;
+    transform: translateY(-2px);
+}
+
+.stats {
+    margin-top: 28px;
+    display: flex;
+    gap: 25px;
+    color: #bbb;
+    font-size: 14px;
+}
+
+/* ================= GAME ================= */
+
+#game {
+    background: #222;
+}
+
+canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.hud {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.hud-box {
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(0,0,0,.65);
+    border: 1px solid rgba(255,255,255,.15);
+    backdrop-filter: blur(5px);
+}
+
+.speed {
+    font-size: 25px;
+    font-weight: 900;
+}
+
+.nitro-wrap {
+    width: 160px;
+}
+
+.nitro-label {
+    font-size: 11px;
+    color: #aaa;
+}
+
+.nitro-bar {
+    width: 100%;
+    height: 9px;
+    background: #333;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+#nitroFill {
+    width: 100%;
+    height: 100%;
+    background: #28a9ff;
+    box-shadow: 0 0 12px #28a9ff;
+}
+
+.pause {
+    pointer-events: auto;
+    padding: 10px 14px;
+    background: rgba(0,0,0,.7);
+    color: white;
+    border-radius: 10px;
+}
+
+.mobile-controls {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 22px;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 22px;
+    pointer-events: none;
+}
+
+.control-group {
+    display: flex;
+    gap: 12px;
+    pointer-events: auto;
+}
+
+.control {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: rgba(0,0,0,.65);
+    border: 2px solid rgba(255,255,255,.2);
+    color: white;
+    font-size: 25px;
+    touch-action: none;
+}
+
+.control:active {
+    background: #ff3030;
+}
+
+#nitroButton {
+    width: 85px;
+    border-radius: 18px;
+    color: #58c4ff;
+}
+
+/* ================= GARAGE ================= */
+
+.panel {
+    align-items: center;
+    justify-content: center;
+    background: #070707;
+    padding: 20px;
+}
+
+.panel-card {
+    width: min(900px, 94vw);
+    max-height: 90vh;
+    overflow: auto;
+    background: #111;
+    border: 1px solid #292929;
+    border-radius: 20px;
+    padding: 25px;
+}
+
+.panel-title {
+    font-size: 30px;
+    font-weight: 900;
+    margin-bottom: 20px;
+}
+
+.car-preview {
+    height: 230px;
+    border-radius: 15px;
+    background:
+        linear-gradient(135deg,#202020,#080808);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.preview-car {
+    width: 250px;
+    height: 90px;
+    border-radius: 35px 45px 20px 20px;
+    background: #e52c2c;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0,0,0,.6);
+}
+
+.preview-car::before {
+    content: "";
+    position: absolute;
+    width: 105px;
+    height: 42px;
+    background: #222;
+    left: 70px;
+    top: -25px;
+    border-radius: 30px 30px 5px 5px;
+}
+
+.wheel {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: #050505;
+    border: 6px solid #555;
+    border-radius: 50%;
+    bottom: -18px;
+}
+
+.wheel.one { left: 35px; }
+.wheel.two { right: 35px; }
+
+.upgrades {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 12px;
+}
+
+.upgrade {
+    background: #181818;
+    border: 1px solid #333;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.upgrade h3 {
+    margin-bottom: 8px;
+}
+
+.bar {
+    height: 8px;
+    background: #333;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 8px 0;
+}
+
+.bar span {
+    display: block;
+    height: 100%;
+    background: #ff3030;
+}
+
+.small-btn {
+    padding: 9px 12px;
+    border-radius: 8px;
+    background: #ff3030;
+    color: white;
+    font-weight: bold;
+}
+
+.back-btn {
+    margin-top: 20px;
+    padding: 12px 20px;
+    background: #252525;
+    color: white;
+    border-radius: 10px;
+}
+
+/* ================= RESULTS ================= */
+
+.result-content {
+    text-align: center;
+}
+
+.result-content h1 {
+    font-size: 45px;
+    margin-bottom: 20px;
+}
+
+.result-stat {
+    margin: 8px;
+    color: #bbb;
+}
+
+.result-stat strong {
+    color: white;
+}
+
+/* ================= SETTINGS ================= */
+
+.setting {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #292929;
+}
+
+select {
+    background: #222;
+    color: white;
+    border: 1px solid #444;
+    padding: 8px;
+    border-radius: 7px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:600px) {
+    .upgrades {
+        grid-template-columns: 1fr;
+    }
+
+    .hud {
+        font-size: 12px;
+    }
+
+    .nitro-wrap {
+        width: 110px;
+    }
+
+    .control {
+        width: 62px;
+        height: 62px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ================= MAIN MENU ================= -->
+
+<section id="menu" class="screen active">
+
+    <div class="logo">
+        STREET <span>VELOCITY</span>
+    </div>
+
+    <div class="subtitle">
+        RACE • UPGRADE • DOMINATE
+    </div>
+
+    <div class="menu-buttons">
+        <button class="menu-btn" onclick="startRace()">🏁 START RACE</button>
+        <button class="menu-btn" onclick="showScreen('garage')">🚗 GARAGE</button>
+        <button class="menu-btn" onclick="showScreen('missions')">🎯 MISSIONS</button>
+        <button class="menu-btn" onclick="showScreen('leaderboard')">🏆 LEADERBOARD</button>
+        <button class="menu-btn" onclick="showScreen('settings')">⚙ SETTINGS</button>
+    </div>
+
+    <div class="stats">
+        <span>💰 <b id="menuCoins">0</b></span>
+        <span>🏆 <b id="menuWins">0</b> Wins</span>
+        <span>⭐ Level <b id="menuLevel">1</b></span>
+    </div>
+
+</section>
+
+
+<!-- ================= GAME ================= -->
+
+<section id="game" class="screen">
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="hud">
+
+        <div class="hud-box">
+            <div class="speed">
+                <span id="speed">0</span> KM/H
+            </div>
+            <div>
+                Score: <span id="score">0</span>
+            </div>
+        </div>
+
+        <div class="hud-box nitro-wrap">
+            <div class="nitro-label">NITRO</div>
+            <div class="nitro-bar">
+                <div id="nitroFill"></div>
+            </div>
+        </div>
+
+        <button class="pause" onclick="togglePause()">Ⅱ</button>
+
+    </div>
+
+    <div class="mobile-controls">
+
+        <div class="control-group">
+            <button class="control" id="left">←</button>
+            <button class="control" id="right">→</button>
+        </div>
+
+        <div class="control-group">
+            <button class="control" id="nitroButton">N₂O</button>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= GARAGE ================= -->
+
+<section id="garage" class="screen panel">
+
+    <div class="panel-card">
+
+        <div class="panel-title">🚗 GARAGE</div>
+
+        <div class="car-preview">
+            <div class="preview-car" id="previewCar">
+                <div class="wheel one"></div>
+                <div class="wheel two"></div>
+            </div>
+        </div>
+
+        <div class="upgrades">
+
+            <div class="upgrade">
+                <h3>⚡ Engine</h3>
+                <div class="bar">
+                    <span id="engineBar"></span>
+                </div>
+                <button class="small-btn" onclick="upgrade('engine')">
+                    Upgrade
+                </button>
+            </div>
+
+            <div class="upgrade">
+                <h3>🛞 Handling</h3>
+                <div class="bar">
+                    <span id="handlingBar"></span>
+                </div>
+                <button class="small-btn" onclick="upgrade('handling')">
+                    Upgrade
+                </button>
+            </div>
+
+            <div class="upgrade">
+                <h3>🔥 Nitro</h3>
+                <div class="bar">
+                    <span id="nitroBar"></span>
+                </div>
+                <button class="small-btn" onclick="upgrade('nitro')">
+                    Upgrade
+                </button>
+            </div>
+
+        </div>
+
+        <button class="back-btn" onclick="showScreen('menu')">
+            ← Back
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ================= MISSIONS ================= -->
+
+<section id="missions" class="screen panel">
+
+    <div class="panel-card">
+
+        <div class="panel-title">🎯 MISSIONS</div>
+
+        <div class="upgrade">
+            <h3>Road Warrior</h3>
+            <p>Drive 5,000 meters.</p>
+            <br>
+            <strong id="distanceMission">0 / 5000</strong>
+        </div>
+
+        <br>
+
+        <div class="upgrade">
+            <h3>Speed Demon</h3>
+            <p>Reach 250 KM/H.</p>
+            <br>
+            <strong id="speedMission">0 / 250</strong>
+        </div>
+
+        <br>
+
+        <div class="upgrade">
+            <h3>Collector</h3>
+            <p>Earn 1,000 coins.</p>
+            <br>
+            <strong id="coinMission">0 / 1000</strong>
+        </div>
+
+        <button class="back-btn" onclick="showScreen('menu')">
+            ← Back
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ================= LEADERBOARD ================= -->
+
+<section id="leaderboard" class="screen panel">
+
+    <div class="panel-card">
+
+        <div class="panel-title">🏆 LEADERBOARD</div>
+
+        <div id="leaderboardList"></div>
+
+        <button class="back-btn" onclick="showScreen('menu')">
+            ← Back
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ================= SETTINGS ================= -->
+
+<section id="settings" class="screen panel">
+
+    <div class="panel-card">
+
+        <div class="panel-title">⚙ SETTINGS</div>
+
+        <div class="setting">
+            <span>Game Difficulty</span>
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="normal" selected>Normal</option>
+                <option value="hard">Hard</option>
+            </select>
+        </div>
+
+        <div class="setting">
+            <span>Sound</span>
+            <button class="small-btn" onclick="toggleSound()" id="soundButton">
+                ON
+            </button>
+        </div>
+
+        <div class="setting">
+            <span>Reset Progress</span>
+            <button class="small-btn" onclick="resetGame()">
+                RESET
+            </button>
+        </div>
+
+        <button class="back-btn" onclick="showScreen('menu')">
+            ← Back
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ================= RESULT ================= -->
+
+<section id="result" class="screen panel">
+
+    <div class="result-content">
+
+        <h1 id="resultTitle">RACE COMPLETE</h1>
+
+        <div class="result-stat">
+            Distance:
+            <strong id="resultDistance">0</strong> m
+        </div>
+
+        <div class="result-stat">
+            Score:
+            <strong id="resultScore">0</strong>
+        </div>
+
+        <div class="result-stat">
+            Coins:
+            <strong id="resultCoins">0</strong>
+        </div>
+
+        <br>
+
+        <button class="menu-btn" onclick="startRace()">
+            🏁 RACE AGAIN
+        </button>
+
+        <button class="back-btn" onclick="showScreen('menu')">
+            MENU
+        </button>
+
+    </div>
+
+</section>
+
+
+<script>
+
+/* =========================================================
+   GAME DATA
+========================================================= */
+
+const defaultData = {
+    coins: 0,
+    wins: 0,
+    level: 1,
+    totalDistance: 0,
+    bestScore: 0,
+
+    upgrades: {
+        engine: 1,
+        handling: 1,
+        nitro: 1
+    },
+
+    settings: {
+        sound: true,
+        difficulty: "normal"
+    }
+};
+
+let data =
+    JSON.parse(localStorage.getItem("streetVelocity")) ||
+    structuredClone(defaultData);
+
+function saveData() {
+    localStorage.setItem(
+        "streetVelocity",
+        JSON.stringify(data)
+    );
+}
+
+/* =========================================================
+   SCREEN SYSTEM
+========================================================= */
+
+function showScreen(id) {
+
+    document.querySelectorAll(".screen")
+        .forEach(s => s.classList.remove("active"));
+
+    document.getElementById(id)
+        .classList.add("active");
+
+    if(id === "menu") updateMenu();
+    if(id === "garage") updateGarage();
+    if(id === "missions") updateMissions();
+    if(id === "leaderboard") updateLeaderboard();
+}
+
+/* =========================================================
+   MENU
+========================================================= */
+
+function updateMenu() {
+
+    document.getElementById("menuCoins").textContent =
+        data.coins;
+
+    document.getElementById("menuWins").textContent =
+        data.wins;
+
+    document.getElementById("menuLevel").textContent =
+        data.level;
+}
+
+/* =========================================================
+   GARAGE
+========================================================= */
+
+function updateGarage() {
+
+    let engine = data.upgrades.engine;
+    let handling = data.upgrades.handling;
+    let nitro = data.upgrades.nitro;
+
+    document.getElementById("engineBar").style.width =
+        (engine / 10 * 100) + "%";
+
+    document.getElementById("handlingBar").style.width =
+        (handling / 10 * 100) + "%";
+
+    document.getElementById("nitroBar").style.width =
+        (nitro / 10 * 100) + "%";
+
+    const colors = [
+        "#e52c2c",
+        "#2678ff",
+        "#23b66d",
+        "#ff9f1c",
+        "#a855f7"
+    ];
+
+    document.getElementById("previewCar").style.background =
+        colors[(data.upgrades.engine - 1) % colors.length];
+}
+
+function upgrade(type) {
+
+    let level = data.upgrades[type];
+
+    if(level >= 10) {
+        alert("Maximum upgrade reached!");
+        return;
+    }
+
+    const cost = level * 150;
+
+    if(data.coins < cost) {
+        alert(`You need ${cost} coins.`);
+        return;
+    }
+
+    data.coins -= cost;
+    data.upgrades[type]++;
+
+    saveData();
+    updateGarage();
+}
+
+/* =========================================================
+   MISSIONS
+========================================================= */
+
+function updateMissions() {
+
+    document.getElementById("distanceMission")
+        .textContent =
+        `${Math.min(data.totalDistance,5000)} / 5000`;
+
+    document.getElementById("coinMission")
+        .textContent =
+        `${Math.min(data.coins,1000)} / 1000`;
+
+    document.getElementById("speedMission")
+        .textContent =
+        `${Math.min(maxSpeed,250)} / 250`;
+}
+
+/* =========================================================
+   LEADERBOARD
+========================================================= */
+
+function updateLeaderboard() {
+
+    let scores = JSON.parse(
+        localStorage.getItem("streetLeaderboard") || "[]"
+    );
+
+    scores.push(data.bestScore);
+
+    scores.sort((a,b) => b-a);
+
+    scores = scores.slice(0,10);
+
+    document.getElementById("leaderboardList")
+        .innerHTML = scores.map((score,i) => `
+            <div class="setting">
+                <span>#${i+1}</span>
+                <strong>${score}</strong>
+            </div>
+        `).join("");
+}
+
+/* =========================================================
+   GAME ENGINE
+========================================================= */
+
+const canvas =
+    document.getElementById("gameCanvas");
+
+const ctx = canvas.getContext("2d");
+
+let W, H;
+
+function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+}
+
+window.addEventListener("resize", resize);
+resize();
+
+/* Game variables */
+
+let gameRunning = false;
+let paused = false;
+
+let roadOffset = 0;
+let distance = 0;
+let score = 0;
+let coinsEarned = 0;
+
+let nitro = 100;
+let currentSpeed = 0;
+let maxSpeed = 0;
+
+let lastTime = 0;
+let spawnTimer = 0;
+
+let keys = {
+    left:false,
+    right:false,
+    nitro:false
+};
+
+let enemies = [];
+let particles = [];
+
+/* =========================================================
+   PLAYER
+========================================================= */
+
+const player = {
+    x: 0,
+    y: 0,
+    width: 52,
+    height: 95
+};
+
+/* =========================================================
+   START RACE
+========================================================= */
+
+function startRace() {
+
+    showScreen("game");
+
+    gameRunning = true;
+    paused = false;
+
+    roadOffset = 0;
+    distance = 0;
+    score = 0;
+    coinsEarned = 0;
+
+    nitro = 100;
+    currentSpeed = 0;
+    maxSpeed = 0;
+
+    enemies = [];
+    particles = [];
+
+    player.x = W / 2;
+    player.y = H - 150;
+
+    lastTime = performance.now();
+
+    requestAnimationFrame(gameLoop);
+}
+
+/* =========================================================
+   GAME LOOP
+========================================================= */
+
+function gameLoop(time) {
+
+    if(!gameRunning) return;
+
+    let dt = Math.min(
+        (time - lastTime) / 1000,
+        0.05
+    );
+
+    lastTime = time;
+
+    if(!paused) {
+
+        update(dt);
+        draw();
+
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+/* =========================================================
+   UPDATE
+========================================================= */
+
+function update(dt) {
+
+    let difficulty =
+        document.getElementById("difficulty").value;
+
+    let baseSpeed = 250;
+
+    if(difficulty === "easy")
+        baseSpeed = 210;
+
+    if(difficulty === "hard")
+        baseSpeed = 290;
+
+    baseSpeed +=
+        data.upgrades.engine * 12;
+
+    let usingNitro =
+        keys.nitro && nitro > 0;
+
+    let targetSpeed =
+        baseSpeed * (usingNitro ? 1.7 : 1);
+
+    currentSpeed +=
+        (targetSpeed-currentSpeed) * dt * 2;
+
+    maxSpeed =
+        Math.max(maxSpeed,currentSpeed * .72);
+
+    if(usingNitro) {
+
+        nitro -=
+            dt * (8 - data.upgrades.nitro * .4);
+
+        nitro = Math.max(0,nitro);
+
+        spawnNitroParticles();
+
+    } else {
+
+        nitro += dt * 2;
+        nitro = Math.min(100,nitro);
+
+    }
+
+    /* Steering */
+
+    let steering =
+        310 + data.upgrades.handling * 30;
+
+    if(keys.left)
+        player.x -= steering * dt;
+
+    if(keys.right)
+        player.x += steering * dt;
+
+    let roadWidth =
+        Math.min(620,W*.72);
+
+    let roadLeft =
+        (W-roadWidth)/2;
+
+    let roadRight =
+        roadLeft+roadWidth;
+
+    player.x =
+        Math.max(
+            roadLeft+35,
+            Math.min(
+                roadRight-35,
+                player.x
+            )
+        );
+
+    roadOffset += currentSpeed * dt;
+
+    distance +=
+        currentSpeed * dt * .08;
+
+    score +=
+        Math.floor(currentSpeed * dt * .4);
+
+    /* Enemy spawning */
+
+    spawnTimer -= dt;
+
+    if(spawnTimer <= 0) {
+
+        spawnEnemy();
+
+        spawnTimer =
+            Math.max(
+                .35,
+                1.15 -
+                data.level*.03
+            );
+    }
+
+    enemies.forEach(enemy => {
+
+        enemy.y +=
+            (currentSpeed*.75 + enemy.speed) * dt;
+
+        if(checkCollision(player,enemy)) {
+
+            endRace(false);
+        }
+
+    });
+
+    enemies =
+        enemies.filter(e => e.y < H+150);
+
+    updateParticles(dt);
+
+    document.getElementById("speed").textContent =
+        Math.round(currentSpeed*.72);
+
+    document.getElementById("score").textContent =
+        score;
+
+    document.getElementById("nitroFill")
+        .style.width = nitro + "%";
+}
+
+/* =========================================================
+   SPAWN ENEMIES
+========================================================= */
+
+function spawnEnemy() {
+
+    let roadWidth =
+        Math.min(620,W*.72);
+
+    let roadLeft =
+        (W-roadWidth)/2;
+
+    let lanes = [-.3,0,.3];
+
+    let lane =
+        lanes[Math.floor(Math.random()*lanes.length)];
+
+    enemies.push({
+
+        x:
+            W/2 +
+            lane*roadWidth,
+
+        y:-120,
+
+        width:50,
+
+        height:90,
+
+        speed:
+            40 + Math.random()*100,
+
+        color:
+            randomCarColor()
+    });
+}
+
+/* =========================================================
+   DRAW
+========================================================= */
+
+function draw() {
+
+    ctx.clearRect(0,0,W,H);
+
+    drawBackground();
+    drawRoad();
+    drawEnemies();
+    drawPlayer();
+    drawParticles();
+}
+
+/* =========================================================
+   BACKGROUND
+========================================================= */
+
+function drawBackground() {
+
+    ctx.fillStyle = "#142414";
+    ctx.fillRect(0,0,W,H);
+
+    /* roadside */
+
+    for(let y=-100;y<H+100;y+=70) {
+
+        let yy =
+            (y+roadOffset*.45)%70;
+
+        ctx.fillStyle =
+            Math.floor(y/70)%2 ?
+            "#eeeeee" :
+            "#d73737";
+
+        ctx.fillRect(
+            W*.05,
+            yy,
+            W*.08,
+            35
+        );
+
+        ctx.fillRect(
+            W*.87,
+            yy,
+            W*.08,
+            35
+        );
+    }
+}
+
+/* =========================================================
+   ROAD
+========================================================= */
+
+function drawRoad() {
+
+    let roadWidth =
+        Math.min(620,W*.72);
+
+    let left =
+        (W-roadWidth)/2;
+
+    ctx.fillStyle = "#303030";
+
+    ctx.fillRect(
+        left,
+        0,
+        roadWidth,
+        H
+    );
+
+    /* edges */
+
+    ctx.fillStyle = "#eeeeee";
+
+    ctx.fillRect(
+        left,
+        0,
+        7,
+        H
+    );
+
+    ctx.fillRect(
+        left+roadWidth-7,
+        0,
+        7,
+        H
+    );
+
+    /* lane markings */
+
+    ctx.fillStyle = "#ddd";
+
+    for(let lane=1;lane<3;lane++) {
+
+        let x =
+            left+
+            roadWidth/3*lane;
+
+        for(
+            let y=-100;
+            y<H+100;
+            y+=90
+        ) {
+
+            let yy =
+                (y+roadOffset)%90;
+
+            ctx.fillRect(
+                x-3,
+                yy,
+                6,
+                45
+            );
+        }
+    }
+}
+
+/* =========================================================
+   PLAYER CAR
+========================================================= */
+
+function drawPlayer() {
+
+    drawCar(
+        player.x,
+        player.y,
+        player.width,
+        player.height,
+        getPlayerColor()
+    );
+
+    if(keys.nitro && nitro > 0) {
+
+        ctx.fillStyle =
+            "rgba(40,170,255,.8)";
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            player.x-12,
+            player.y+player.height/2
+        );
+
+        ctx.lineTo(
+            player.x-5,
+            player.y+player.height/2+35
+        );
+
+        ctx.lineTo(
+            player.x,
+            player.y+player.height/2+12
+        );
+
+        ctx.lineTo(
+            player.x+5,
+            player.y+player.height/2+35
+        );
+
+        ctx.lineTo(
+            player.x+12,
+            player.y+player.height/2
+        );
+
+        ctx.fill();
+    }
+}
+
+/* =========================================================
+   ENEMY CARS
+========================================================= */
+
+function drawEnemies() {
+
+    enemies.forEach(enemy => {
+
+        drawCar(
+            enemy.x,
+            enemy.y,
+            enemy.width,
+            enemy.height,
+            enemy.color
+        );
+    });
+}
+
+/* =========================================================
+   CAR DRAWING
+========================================================= */
+
+function drawCar(x,y,w,h,color) {
+
+    ctx.save();
+
+    ctx.translate(x,y);
+
+    /* shadow */
+
+    ctx.fillStyle =
+        "rgba(0,0,0,.45)";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        0,
+        5,
+        w*.62,
+        h*.57,
+        0,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    /* body */
+
+    ctx.fillStyle = color;
+
+    roundRect(
+        -w/2,
+        -h/2,
+        w,
+        h,
+        12
+    );
+
+    ctx.fill();
+
+    /* windows */
+
+    ctx.fillStyle = "#111";
+
+    roundRect(
+        -w*.32,
+        -h*.31,
+        w*.64,
+        h*.28,
+        7
+    );
+
+    ctx.fill();
+
+    /* windshield separator */
+
+    ctx.fillStyle = "#555";
+
+    ctx.fillRect(
+        -2,
+        -h*.3,
+        4,
+        h*.25
+    );
+
+    /* lights */
+
+    ctx.fillStyle = "#fff2a8";
+
+    ctx.fillRect(
+        -w*.37,
+        -h*.43,
+        w*.17,
+        8
+    );
+
+    ctx.fillRect(
+        w*.20,
+        -h*.43,
+        w*.17,
+        8
+    );
+
+    /* wheels */
+
+    ctx.fillStyle = "#050505";
+
+    ctx.fillRect(
+        -w*.57,
+        -h*.27,
+        8,
+        h*.24
+    );
+
+    ctx.fillRect(
+        w*.49,
+        -h*.27,
+        8,
+        h*.24
+    );
+
+    ctx.fillRect(
+        -w*.57,
+        h*.03,
+        8,
+        h*.24
+    );
+
+    ctx.fillRect(
+        w*.49,
+        h*.03,
+        8,
+        h*.24
+    );
+
+    ctx.restore();
+}
+
+function roundRect(x,y,w,h,r) {
+
+    ctx.beginPath();
+
+    ctx.moveTo(x+r,y);
+
+    ctx.lineTo(x+w-r,y);
+
+    ctx.quadraticCurveTo(
+        x+w,y,
+        x+w,y+r
+    );
+
+    ctx.lineTo(x+w,y+h-r);
+
+    ctx.quadraticCurveTo(
+        x+w,y+h,
+        x+w-r,y+h
+    );
+
+    ctx.lineTo(x+r,y+h);
+
+    ctx.quadraticCurveTo(
+        x,y+h,
+        x,y+h-r
+    );
+
+    ctx.lineTo(x,y+r);
+
+    ctx.quadraticCurveTo(
+        x,y,
+        x+r,y
+    );
+
+    ctx.closePath();
+}
+
+/* =========================================================
+   PARTICLES
+========================================================= */
+
+function spawnNitroParticles() {
+
+    particles.push({
+
+        x:player.x+(Math.random()-.5)*15,
+
+        y:player.y+50,
+
+        life:.35,
+
+        size:3+Math.random()*5
+    });
+}
+
+function updateParticles(dt) {
+
+    particles.forEach(p => {
+
+        p.y += 160*dt;
+        p.life -= dt;
+    });
+
+    particles =
+        particles.filter(p => p.life>0);
+}
+
+function drawParticles() {
+
+    particles.forEach(p => {
+
+        ctx.globalAlpha =
+            Math.max(0,p.life/.35);
+
+        ctx.fillStyle =
+            "#65caff";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            p.x,
+            p.y,
+            p.size,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+    });
+
+    ctx.globalAlpha=1;
+}
+
+/* =========================================================
+   COLLISION
+========================================================= */
+
+function checkCollision(a,b) {
+
+    return Math.abs(a.x-b.x) <
+        (a.width+b.width)*.42
+        &&
+        Math.abs(a.y-b.y) <
+        (a.height+b.height)*.42;
+}
+
+/* =========================================================
+   END RACE
+========================================================= */
+
+function endRace(won) {
+
+    if(!gameRunning) return;
+
+    gameRunning = false;
+
+    let earned =
+        Math.floor(
+            distance/25
+        ) +
+        Math.floor(score/100);
+
+    if(won)
+        earned *= 2;
+
+    data.coins += earned;
+
+    data.totalDistance +=
+        Math.floor(distance);
+
+    if(won)
+        data.wins++;
+
+    if(score > data.bestScore)
+        data.bestScore = score;
+
+    data.level =
+        Math.max(
+            1,
+            Math.floor(data.totalDistance/1000)+1
+        );
+
+    saveData();
+
+    document.getElementById("resultTitle")
+        .textContent =
+        won ? "🏆 YOU WIN!" : "💥 CRASH!";
+
+    document.getElementById("resultDistance")
+        .textContent =
+        Math.floor(distance);
+
+    document.getElementById("resultScore")
+        .textContent =
+        score;
+
+    document.getElementById("resultCoins")
+        .textContent =
+        "+"+earned;
+
+    showScreen("result");
+}
+
+/* =========================================================
+   PAUSE
+========================================================= */
+
+function togglePause() {
+
+    if(!gameRunning) return;
+
+    paused = !paused;
+}
+
+/* =========================================================
+   KEYBOARD
+========================================================= */
+
+window.addEventListener("keydown", e => {
+
+    if(e.key === "ArrowLeft" || e.key.toLowerCase()==="a")
+        keys.left=true;
+
+    if(e.key === "ArrowRight" || e.key.toLowerCase()==="d")
+        keys.right=true;
+
+    if(
+        e.key === " " ||
+        e.key.toLowerCase()==="w"
+    )
+        keys.nitro=true;
+
+    if(e.key === "Escape")
+        togglePause();
+});
+
+window.addEventListener("keyup", e => {
+
+    if(e.key === "ArrowLeft" || e.key.toLowerCase()==="a")
+        keys.left=false;
+
+    if(e.key === "ArrowRight" || e.key.toLowerCase()==="d")
+        keys.right=false;
+
+    if(
+        e.key === " " ||
+        e.key.toLowerCase()==="w"
+    )
+        keys.nitro=false;
+});
+
+/* =========================================================
+   TOUCH CONTROLS
+========================================================= */
+
+function bindButton(id,key) {
+
+    const el =
+        document.getElementById(id);
+
+    const down = e => {
+        e.preventDefault();
+        keys[key]=true;
+    };
+
+    const up = e => {
+        e.preventDefault();
+        keys[key]=false;
+    };
+
+    el.addEventListener("pointerdown",down);
+    el.addEventListener("pointerup",up);
+    el.addEventListener("pointercancel",up);
+    el.addEventListener("pointerleave",up);
+}
+
+bindButton("left","left");
+bindButton("right","right");
+bindButton("nitroButton","nitro");
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+function toggleSound() {
+
+    data.settings.sound =
+        !data.settings.sound;
+
+    document.getElementById("soundButton")
+        .textContent =
+        data.settings.sound ? "ON" : "OFF";
+
+    saveData();
+}
+
+document.getElementById("difficulty")
+    .value =
+    data.settings.difficulty;
+
+document.getElementById("difficulty")
+    .addEventListener("change", e => {
+
+        data.settings.difficulty =
+            e.target.value;
+
+        saveData();
+    });
+
+/* =========================================================
+   RESET
+========================================================= */
+
+function resetGame() {
+
+    if(!confirm(
+        "Reset all progress?"
+    )) return;
+
+    data =
+        structuredClone(defaultData);
+
+    saveData();
+
+    updateMenu();
+}
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function randomCarColor() {
+
+    const colors = [
+        "#2563eb",
+        "#f59e0b",
+        "#22c55e",
+        "#9333ea",
+        "#ef4444",
+        "#e5e7eb"
+    ];
+
+    return colors[
+        Math.floor(
+            Math.random()*colors.length
+        )
+    ];
+}
+
+function getPlayerColor() {
+
+    const colors = [
+        "#e52c2c",
+        "#2678ff",
+        "#23b66d",
+        "#ff9f1c",
+        "#a855f7"
+    ];
+
+    return colors[
+        (data.upgrades.engine-1)
+        % colors.length
+    ];
+}
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+updateMenu();
+
+</script>
+
+</body>
+</html>
